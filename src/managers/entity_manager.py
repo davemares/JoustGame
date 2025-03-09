@@ -274,6 +274,7 @@ class EntityManager:
                     player.y = platform.rect.top - player.height
                     player.rect.y = int(player.y)
                     player.velocityY = 0
+                    player.isGrounded = True  # Set grounded flag for momentum physics
                     landed = True
                     # Play landing sound
                     self.game.sound_manager.play_sound("land")
@@ -329,6 +330,7 @@ class EntityManager:
                     enemy.y = platform.rect.top - enemy.height
                     enemy.rect.y = int(enemy.y)
                     enemy.velocityY = 0
+                    enemy.isGrounded = True  # Set grounded flag for momentum physics
                     landed = True
                     break  # Exit loop once landed
         

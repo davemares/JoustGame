@@ -10,11 +10,19 @@ TITLE = "Joust"
 # Game settings
 FPS = 60
 GRAVITY = 0.5
-FLAP_POWER = 12
+
+# Flying physics
+FLAP_POWER = 1.0  # Reduced initial flap power for momentum building
+FLAP_MOMENTUM_GAIN = 0.2  # How much each flap increases momentum
+MAX_FLAP_MOMENTUM = 3.0  # Maximum flap momentum multiplier
+FLAP_MOMENTUM_DECAY = 0.05  # How quickly flap momentum decays
 MAX_VERTICAL_SPEED = 15
+
+# Horizontal movement physics
 HORIZONTAL_SPEED = 5
-HORIZONTAL_ACCELERATION = 0.5
-HORIZONTAL_DECELERATION = 0.3
+HORIZONTAL_ACCELERATION = 0.3  # Reduced for more gradual acceleration
+HORIZONTAL_DECELERATION = 0.1  # Reduced for more momentum preservation
+HORIZONTAL_AIR_CONTROL = 0.7  # Multiplier for air control (less than 1.0 means reduced control in air)
 MAX_HORIZONTAL_SPEED = 8
 
 # Player settings

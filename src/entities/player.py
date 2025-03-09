@@ -6,7 +6,8 @@ from entities.entity import Entity
 from utils.constants import (
     GRAVITY, FLAP_POWER, MAX_VERTICAL_SPEED, 
     HORIZONTAL_ACCELERATION, HORIZONTAL_DECELERATION, MAX_HORIZONTAL_SPEED,
-    SCREEN_HEIGHT, LAVA_Y_POSITION, PLAYER_INVINCIBILITY_TIME
+    SCREEN_HEIGHT, LAVA_Y_POSITION, PLAYER_INVINCIBILITY_TIME,
+    FLAP_MOMENTUM_GAIN, MAX_FLAP_MOMENTUM, FLAP_MOMENTUM_DECAY, HORIZONTAL_AIR_CONTROL
 )
 
 class Player(Entity):
@@ -35,6 +36,10 @@ class Player(Entity):
         self.respawnTimer = 0
         self.invincibilityTimer = 0
         
+        # Momentum physics variables
+        self.flapMomentum = 1.0  # Multiplier for flap power
+        self.isGrounded = False  # Whether player is on a platform
+        
         # Control keys (default to player 1)
         if playerNumber == 1:
             self.leftKey = pygame.K_LEFT
@@ -60,25 +65,29 @@ class Player(Entity):
         if not self.isAlive or self.respawnTimer > 0:
             return
         
+        # Calculate air control factor
+        # Full control on ground, reduced control in air
+        airControlFactor = 1.0 if self.isGrounded else HORIZONTAL_AIR_CONTROL
+        
         # Horizontal movement
         if keys[self.leftKey]:
-            self.velocityX -= HORIZONTAL_ACCELERATION
+            self.velocityX -= HORIZONTAL_ACCELERATION * airControlFactor
             self.facingRight = False
             if self.velocityX < -MAX_HORIZONTAL_SPEED:
                 self.velocityX = -MAX_HORIZONTAL_SPEED
         elif keys[self.rightKey]:
-            self.velocityX += HORIZONTAL_ACCELERATION
+            self.velocityX += HORIZONTAL_ACCELERATION * airControlFactor
             self.facingRight = True
             if self.velocityX > MAX_HORIZONTAL_SPEED:
                 self.velocityX = MAX_HORIZONTAL_SPEED
         else:
-            # Decelerate when no keys are pressed
+            # Decelerate when no keys are pressed, but slower in air
             if self.velocityX > 0:
-                self.velocityX -= HORIZONTAL_DECELERATION
+                self.velocityX -= HORIZONTAL_DECELERATION * airControlFactor
                 if self.velocityX < 0:
                     self.velocityX = 0
             elif self.velocityX < 0:
-                self.velocityX += HORIZONTAL_DECELERATION
+                self.velocityX += HORIZONTAL_DECELERATION * airControlFactor
                 if self.velocityX > 0:
                     self.velocityX = 0
         
@@ -91,7 +100,17 @@ class Player(Entity):
     def flap(self):
         """Make the player flap to gain altitude"""
         self.isFlapping = True
-        self.velocityY -= FLAP_POWER * 0.2  # Apply a fraction of flap power per frame
+        
+        # Build up flap momentum with each flap
+        self.flapMomentum += FLAP_MOMENTUM_GAIN
+        if self.flapMomentum > MAX_FLAP_MOMENTUM:
+            self.flapMomentum = MAX_FLAP_MOMENTUM
+        
+        # Apply flap force with momentum multiplier
+        self.velocityY -= FLAP_POWER * self.flapMomentum
+        
+        # Reset grounded state when flapping
+        self.isGrounded = False
         
         # Cap upward velocity
         if self.velocityY < -MAX_VERTICAL_SPEED:
@@ -119,6 +138,12 @@ class Player(Entity):
         # Cap downward velocity
         if self.velocityY > MAX_VERTICAL_SPEED:
             self.velocityY = MAX_VERTICAL_SPEED
+        
+        # Decay flap momentum when not flapping
+        if not self.isFlapping and self.flapMomentum > 1.0:
+            self.flapMomentum -= FLAP_MOMENTUM_DECAY
+            if self.flapMomentum < 1.0:
+                self.flapMomentum = 1.0
         
         # Update position
         super().update()
@@ -171,9 +196,11 @@ class Player(Entity):
         self.x = 400 if self.playerNumber == 1 else 800
         self.y = 300
         
-        # Reset velocity
+        # Reset velocity and momentum physics
         self.velocityX = 0
         self.velocityY = 0
+        self.flapMomentum = 1.0
+        self.isGrounded = False
         
         # Reset state
         self.isAlive = True
