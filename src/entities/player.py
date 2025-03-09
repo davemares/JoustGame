@@ -40,6 +40,9 @@ class Player(Entity):
         self.flapMomentum = 1.0  # Multiplier for flap power
         self.isGrounded = False  # Whether player is on a platform
         
+        # Track previous flap key state to detect individual presses
+        self.flapKeyPressed = False
+        
         # Control keys (default to player 1)
         if playerNumber == 1:
             self.leftKey = pygame.K_LEFT
@@ -91,10 +94,12 @@ class Player(Entity):
                 if self.velocityX > 0:
                     self.velocityX = 0
         
-        # Flapping (vertical movement)
-        if keys[self.flapKey]:
+        # Flapping (vertical movement) - only flap on key press, not hold
+        if keys[self.flapKey] and not self.flapKeyPressed:
             self.flap()
-        else:
+            self.flapKeyPressed = True
+        elif not keys[self.flapKey]:
+            self.flapKeyPressed = False
             self.isFlapping = False
     
     def flap(self):
@@ -108,6 +113,10 @@ class Player(Entity):
         
         # Apply flap force with momentum multiplier
         self.velocityY -= FLAP_POWER * self.flapMomentum
+        
+        # Give an extra boost when taking off from ground
+        if self.isGrounded:
+            self.velocityY -= FLAP_POWER * 1.5  # Extra boost when taking off
         
         # Reset grounded state when flapping
         self.isGrounded = False
@@ -200,6 +209,7 @@ class Player(Entity):
         self.velocityX = 0
         self.velocityY = 0
         self.flapMomentum = 1.0
+        self.flapKeyPressed = False
         self.isGrounded = False
         
         # Reset state

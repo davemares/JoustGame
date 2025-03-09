@@ -12,10 +12,10 @@ FPS = 60
 GRAVITY = 0.5
 
 # Flying physics
-FLAP_POWER = 1.0  # Reduced initial flap power for momentum building
-FLAP_MOMENTUM_GAIN = 0.2  # How much each flap increases momentum
-MAX_FLAP_MOMENTUM = 3.0  # Maximum flap momentum multiplier
-FLAP_MOMENTUM_DECAY = 0.05  # How quickly flap momentum decays
+FLAP_POWER = 3.0  # Increased base flap power for individual button presses
+FLAP_MOMENTUM_GAIN = 0.4  # Increased momentum gain per flap
+MAX_FLAP_MOMENTUM = 3.5  # Slightly higher maximum momentum multiplier
+FLAP_MOMENTUM_DECAY = 0.03  # Slower momentum decay to maintain altitude longer
 MAX_VERTICAL_SPEED = 15
 
 # Horizontal movement physics
